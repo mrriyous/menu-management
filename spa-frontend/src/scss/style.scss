@@ -1,0 +1,51 @@
+@import './variables';
+@import 'vuetify/styles/main.sass';
+@import './override';
+@import './layout/container';
+@import './layout/sidebar';
+@import './layout/topbar';
+@import './components/VButtons';
+@import './components/VCard';
+@import './components/VInput';
+@import './components/VNavigationDrawer';
+@import './components/VShadow';
+@import './components/VTextField';
+@import './pages/dashboards';
+@import './pages/authentication';
+@import 'vue3-perfect-scrollbar/dist/vue3-perfect-scrollbar.css';
+
+.table-search-field {
+    max-width: 250px;
+}
+
+.styled-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+  
+.styled-table th,
+.styled-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+  
+.styled-table th {
+    background-color: #f2f2f2;
+}
+  
+.styled-table td {
+    background-color: #fff;
+}
+  
+.action-icon {
+    cursor: pointer;
+    margin-right: 5px;
+    font-size: 18px;
+    color: #2196F3;
+}
+  
+.action-icon:hover {
+    color: #1565c0;
+}
