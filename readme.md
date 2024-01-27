@@ -37,8 +37,13 @@ This project consists of a Laravel backend (spa-backend) and a Vite frontend (sp
     ```bash
     php artisan migrate
     ```
+6. Seed the user:
 
-6. Start the Laravel development server:
+    ```bash
+    php artisan db:seed
+    ```
+
+7. Start the Laravel development server:
 
     ```bash
     php artisan serve
