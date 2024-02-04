@@ -152,7 +152,7 @@ export default {
                 
                 const data = response.data;
                 this.parentCategories = this.flattenedCategories(data.categories);
-                console.log(this.parentCategories, 'testing');
+
                 this.loadingData = false;
             } catch (error) {
                 this.loadingData = false;

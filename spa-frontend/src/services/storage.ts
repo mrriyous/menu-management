@@ -3,7 +3,7 @@ export function storageSetData(identifider: string, value: any) {
 }
 
 export function storageGetData(identifider: string) {
-    localStorage.getItem(identifider);
+    return localStorage.getItem(identifider);
 }
 
 export function storageRemoveData(identifider: string) {

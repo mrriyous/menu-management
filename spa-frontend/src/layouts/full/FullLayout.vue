@@ -29,6 +29,7 @@ export default {
     async checkLoggedInUser() {
         try {
             const bearerToken = storageGetData(import.meta.env.VITE_API_TOKEN_IDENTIFIER);
+
             const apiUrl = import.meta.env.VITE_API_URL;
 
             const response = await axios.get(`${apiUrl}/user`, {
@@ -39,10 +40,7 @@ export default {
 
             // Access the user data from the response
             const userData = response.data;
-
-            console.log('User Data:', userData);
         } catch (error) {
-            console.log(error);
             if(error.response != undefined) {
                 if (error.response.status === 401) {
                     storageRemoveData(import.meta.env.VITE_API_TOKEN_IDENTIFIER);
