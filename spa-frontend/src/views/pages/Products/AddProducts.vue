@@ -111,6 +111,7 @@
 import UiParentCard from '@/components/shared/UiParentCard.vue';
 import { router } from '@/router';
 import axios from 'axios';
+import { storageSetData, storageGetData } from '@/services/storage';
 
 export default {
     data() {
@@ -142,7 +143,7 @@ export default {
 
             try {
                 const apiUrl = import.meta.env.VITE_API_URL;
-                const token = localStorage.getItem(import.meta.env.VITE_API_TOKEN_IDENTIFIER);
+                const token = storageGetData(import.meta.env.VITE_API_TOKEN_IDENTIFIER);
                 const response = await axios.post(`${apiUrl}/products`, {
                     name: this.name,
                     code: this.code,
@@ -186,7 +187,7 @@ export default {
         async setupForm() {
             try {
                 const apiUrl = import.meta.env.VITE_API_URL;
-                const token = localStorage.getItem(import.meta.env.VITE_API_TOKEN_IDENTIFIER);
+                const token = storageGetData(import.meta.env.VITE_API_TOKEN_IDENTIFIER);
                 const response = await axios.get(`${apiUrl}/categories/get-hierarchically`, {
                     headers: {
                         Authorization: `Bearer ${token}`

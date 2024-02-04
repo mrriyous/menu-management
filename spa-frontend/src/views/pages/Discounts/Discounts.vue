@@ -73,6 +73,7 @@
 <script>
 import UiParentCard from '@/components/shared/UiParentCard.vue';
 import { router } from '@/router';
+import { storageGetData } from '@/services/storage';
 import axios from 'axios';
 
 export default {
@@ -102,7 +103,7 @@ export default {
         },
         async getData() {
             try {
-                const bearerToken = localStorage.getItem(import.meta.env.VITE_API_TOKEN_IDENTIFIER);
+                const bearerToken = storageGetData(import.meta.env.VITE_API_TOKEN_IDENTIFIER);
                 const apiUrl = import.meta.env.VITE_API_URL;
 
                 const response = await axios.get(`${apiUrl}/discounts?page=${this.currentPage}&search=${this.searchQuery}`, {
@@ -132,7 +133,7 @@ export default {
             }
 
             try {
-                const bearerToken = localStorage.getItem(import.meta.env.VITE_API_TOKEN_IDENTIFIER);
+                const bearerToken = storageGetData(import.meta.env.VITE_API_TOKEN_IDENTIFIER);
                 const apiUrl = import.meta.env.VITE_API_URL;
 
                 const response = await axios.post(`${apiUrl}/discounts/${discount.id}`, {

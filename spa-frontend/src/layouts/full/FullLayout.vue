@@ -18,6 +18,7 @@ import { RouterView } from 'vue-router';
 import MainView from './Main.vue';
 import axios from 'axios';
 import { router } from '@/router';
+import { storageGetData, storageRemoveData } from '@/services/storage';
 
 export default {
   components: {
@@ -27,7 +28,7 @@ export default {
   methods: {
     async checkLoggedInUser() {
         try {
-            const bearerToken = localStorage.getItem(import.meta.env.VITE_API_TOKEN_IDENTIFIER);
+            const bearerToken = storageGetData(import.meta.env.VITE_API_TOKEN_IDENTIFIER);
             const apiUrl = import.meta.env.VITE_API_URL;
 
             const response = await axios.get(`${apiUrl}/user`, {
@@ -44,7 +45,7 @@ export default {
             console.log(error);
             if(error.response != undefined) {
                 if (error.response.status === 401) {
-                    localStorage.removeItem(import.meta.env.VITE_API_TOKEN_IDENTIFIER);
+                    storageRemoveData(import.meta.env.VITE_API_TOKEN_IDENTIFIER);
                     console.error('Unauthorized access. Redirect to login page or perform logout.');
                     router.push('/login');
                 }

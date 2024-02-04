@@ -23,6 +23,7 @@ class CategoryController extends Controller
         }
 
         $categories = $categories->paginate(20);
+
         return response()->json([
             'error' => false,
             'categories' => $categories

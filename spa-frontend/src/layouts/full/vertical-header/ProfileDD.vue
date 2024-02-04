@@ -41,6 +41,7 @@
 
 <script>
 import { router } from '@/router';
+import { storageRemoveData } from '@/services/storage';
 import { UserIcon, MailIcon, ListCheckIcon } from 'vue-tabler-icons';
 
 export default {
@@ -51,7 +52,7 @@ export default {
     },
     methods: {
         logout() {
-            localStorage.removeItem(import.meta.env.VITE_API_TOKEN_IDENTIFIER);
+            storageRemoveData(import.meta.env.VITE_API_TOKEN_IDENTIFIER);
             router.push('/login');
         }
     }

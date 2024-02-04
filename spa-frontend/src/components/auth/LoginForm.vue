@@ -54,6 +54,7 @@
 
 <script>
 import axios from 'axios';
+import { storageSetData, storageGetData } from '@/services/storage';
 
 export default {
     data() {
@@ -68,7 +69,7 @@ export default {
     },
     methods: {
         checkLoggedInUser() {
-            const apiToken = localStorage.getItem(import.meta.env.VITE_API_TOKEN_IDENTIFIER);
+            const apiToken = storageGetData(import.meta.env.VITE_API_TOKEN_IDENTIFIER);
             if (apiToken != null && apiToken != '') {
                 this.$router.push('/');
             }
@@ -81,7 +82,7 @@ export default {
                     password: this.password
                 });
 
-                localStorage.setItem(import.meta.env.VITE_API_TOKEN_IDENTIFIER, response.data.token);
+                storageSetData(import.meta.env.VITE_API_TOKEN_IDENTIFIER, response.data.token);
 
                 this.$router.push('/');
             } catch (error) {
