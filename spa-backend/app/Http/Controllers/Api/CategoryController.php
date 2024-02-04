@@ -5,10 +5,18 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\CategoryRequest;
 use App\Models\Category;
+use App\Services\CategoryService;
+use Exception;
 use Illuminate\Http\Request;
 
 class CategoryController extends Controller
 {
+    protected $categoryService;
+
+    public function __construct(CategoryService $categoryService)
+    {
+        $this->categoryService = $categoryService;
+    }
     /**
      * Display a listing of the categories.
      *
@@ -16,13 +24,7 @@ class CategoryController extends Controller
      */
     public function index(Request $request)
     {
-        $categories = Category::orderBy('code', 'asc')->with('parent');
-        
-        if (!empty($request->search)) {
-            $categories = $categories->where('name', 'like', '%'.$request->search.'%')->orWhere('name', 'like', '%'.$request->search.'%');
-        }
-
-        $categories = $categories->paginate(20);
+        $categories = $this->categoryService->getCategories($request->all());
 
         return response()->json([
             'error' => false,
@@ -37,14 +39,11 @@ class CategoryController extends Controller
      * @return void
      */
     public function getHierarchically(Request $request) {
-        $categories = Category::whereNull('parent_category_id')
-                        ->when(!empty($request->category_id), function($query) use ($request) {
-                            $query->where('id', '!=', $request->category_id);
-                        })
-                        ->get();
 
         // Manually remove unnecessary category to return
-        $finalCategories = (new Category)->getChildrenHierarchically($categories, $request->category_id ?? null, null, $request->max_level ?? null);
+        $finalCategories = $this->categoryService->getCategoryHierarchically($request->all());
+        
+        
 
         return response()->json([
             'error' => false,
@@ -60,7 +59,7 @@ class CategoryController extends Controller
      */
     public function store(CategoryRequest $request)
     {
-        $category = Category::create($request->all());
+        $category = $this->categoryService->createCategory($request->all());
 
         return response()->json([
             'error' => false,
@@ -76,7 +75,7 @@ class CategoryController extends Controller
      */
     public function show($id)
     {
-        $category = Category::with('parent')->find($id);
+        $category = $this->categoryService->findCategory($id, true);
 
         if (!$category) {
             return response()->json([
@@ -100,16 +99,14 @@ class CategoryController extends Controller
      */
     public function update(CategoryRequest $request, $id)
     {
-        $category = Category::find($id);
-
-        if (!$category) {
+        try {
+            $this->categoryService->updateCategory($id, $request->except('_method'));
+        } catch (Exception $e) {
             return response()->json([
                 'error' => true,
-                'error_message' => 'Category not found'
-            ], 404);
+                'error_message' => $e->getMessage()
+            ]);
         }
-
-        $category->update($request->all());
 
         return response()->json([
             'error' => false,
@@ -125,16 +122,14 @@ class CategoryController extends Controller
      */
     public function destroy($id)
     {
-        $category = Category::find($id);
-
-        if (!$category) {
+        try {
+            $this->categoryService->deleteCategory($id);
+        } catch (Exception $e) {
             return response()->json([
                 'error' => true,
-                'error_message' => 'Category not found'
-            ], 404);
+                'error_message' => $e->getMessage()
+            ]);
         }
-
-        $category->delete();
 
         return response()->json([
             'error' => false,
