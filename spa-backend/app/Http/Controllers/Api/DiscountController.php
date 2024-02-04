@@ -8,11 +8,20 @@ use App\Http\Requests\Api\ProductRequest;
 use App\Models\Category;
 use App\Models\Discount;
 use App\Models\Product;
+use App\Services\DiscountService;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
 class DiscountController extends Controller
 {
+    protected $discountService;
+
+    public function __construct(DiscountService $discountService)
+    {
+        $this->discountService = $discountService;
+    }
+
     /**
      * Display a listing of the products.
      *
@@ -20,13 +29,7 @@ class DiscountController extends Controller
      */
     public function index(Request $request)
     {
-        $discounts = Discount::orderBy('code', 'asc')->with('discountable');
-
-        if (!empty($request->search)) {
-            $discounts = $discounts->where('name', 'like', '%'.$request->search.'%')->orWhere('name', 'like', '%'.$request->search.'%');
-        }
-
-        $discounts = $discounts->paginate(20);
+        $discounts = $this->discountService->getDiscounts($request->all());
 
         return response()->json([
             'error' => false,
@@ -44,28 +47,15 @@ class DiscountController extends Controller
     {
         $arrayToSave = $request->all();
 
-        if ($request->discount_type != 'All') {
-            $model = $request->discount_type == 'Category' ? Category::class : Product::class;
-            $fieldToUse = $request->discount_type == 'Category' ? 'product_category_id' : 'product_id';
-            $idToCheck = $request->discount_type == 'Category' ? $request->{$fieldToUse} : $request->{$fieldToUse};
-            $findData = $model::find($idToCheck);
+        $createResponse = $this->discountService->createDiscount($arrayToSave);
 
-            if (empty($findData)) {
-                // Authentication failed
-                throw ValidationException::withMessages([
-                    $fieldToUse => ['Please select the valid data.'],
-                ]);
-            }
-
-            $arrayToSave['discountable_type'] = $model;
-            $arrayToSave['discountable_id'] = $idToCheck;
+        if ($createResponse['error']) {
+            throw ValidationException::withMessages($createResponse['errors']);
         }
-
-        $discount = Discount::create($arrayToSave);
 
         return response()->json([
             'error' => false,
-            'discount' => $discount
+            'discount' => $createResponse['discount']
         ], 201);
     }
 
@@ -77,7 +67,7 @@ class DiscountController extends Controller
      */
     public function show($id)
     {
-        $discount = Discount::find($id);
+        $discount = $this->discountService->findDiscount($id);
 
         if (!$discount) {
             return response()->json([
@@ -101,34 +91,20 @@ class DiscountController extends Controller
      */
     public function update(DiscountRequest $request, $id)
     {
-        $discount = Discount::find($id);
-
-        if (!$discount) {
-            return response()->json([
-                'error' => true,
-                'error_message' => 'Discount not found'
-            ], 404);
-        }
 
         $arrayToSave = $request->all();
-        if ($request->discount_type != 'All') {
-            $model = $request->discount_type == 'Category' ? Category::class : Product::class;
-            $fieldToUse = $request->discount_type == 'Category' ? 'product_category_id' : 'product_id';
-            $idToCheck = $request->discount_type == 'Category' ? $request->{$fieldToUse} : $request->{$fieldToUse};
-            $findData = $model::find($idToCheck);
-
-            if (empty($findData)) {
-                // Authentication failed
-                throw ValidationException::withMessages([
-                    $fieldToUse => ['Please select the valid data.'],
-                ]);
-            }
-
-            $arrayToSave['discountable_type'] = $model;
-            $arrayToSave['discountable_id'] = $idToCheck;
+        try {
+            $updateResponse = $this->discountService->updateDiscount($id, $arrayToSave);
+        } catch (Exception $e) {
+            return response()->json([
+                'error' => true,
+                'error_message' => $e->getMessage()
+            ]);
         }
 
-        $discount->update($arrayToSave);
+        if ($updateResponse['error']) {
+            throw ValidationException::withMessages($updateResponse['errors']);
+        }
 
         return response()->json([
             'error' => false,
@@ -144,16 +120,14 @@ class DiscountController extends Controller
      */
     public function destroy($id)
     {
-        $discount = Discount::find($id);
-
-        if (!$discount) {
+        try {
+            $this->discountService->deleteDiscount($id);
+        } catch (Exception $e) {
             return response()->json([
                 'error' => true,
-                'error_message' => 'Discount not found'
-            ], 404);
+                'error_message' => $e->getMessage()
+            ]);
         }
-
-        $discount->delete();
 
         return response()->json([
             'error' => false,

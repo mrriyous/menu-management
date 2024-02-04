@@ -6,6 +6,12 @@ use App\Models\Category;
 
 class CategoryRepository
 {
+
+    public function getModelClass()
+    {
+        return Category::class;
+    }
+
     public function getCategories(array $filterQuery = [])
     {
         $categories = Category::orderBy('code', 'asc')->with('parent');
@@ -35,6 +41,11 @@ class CategoryRepository
         return Category::create($data);
     }
 
+    public function find($id)
+    {
+        return $this->findCategory($id);
+    }
+
     public function findCategory($id, $withParent = false)
     {
         $category = new Category;
@@ -55,4 +66,5 @@ class CategoryRepository
     {
         return Category::where('id', $id)->delete();
     }
+
 }

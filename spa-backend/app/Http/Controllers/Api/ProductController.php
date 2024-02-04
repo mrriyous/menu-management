@@ -6,10 +6,19 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Api\ProductRequest;
 use App\Models\Category;
 use App\Models\Product;
+use App\Services\ProductService;
+use Exception;
 use Illuminate\Http\Request;
 
 class ProductController extends Controller
 {
+
+    protected $productService;
+
+    public function __construct(ProductService $productService)
+    {
+        $this->productService = $productService;
+    }
     /**
      * Display a listing of the products.
      *
@@ -17,17 +26,7 @@ class ProductController extends Controller
      */
     public function index(Request $request)
     {
-        $products = Product::orderBy('code', 'asc')->with('category');
-
-        if (!empty($request->search)) {
-            $products = $products->where('name', 'like', '%'.$request->search.'%')->orWhere('name', 'like', '%'.$request->search.'%');
-        }
-
-        if ($request->paginate == 'no') {
-            $products = $products->get();
-        } else {
-            $products = $products->paginate(20);
-        }
+        $products = $this->productService->getProducts($request->all());
 
         return response()->json([
             'error' => false,
@@ -43,7 +42,7 @@ class ProductController extends Controller
      */
     public function store(ProductRequest $request)
     {
-        $product = Product::create($request->all());
+        $product = $this->productService->createProduct($request->all());
 
         return response()->json([
             'error' => false,
@@ -59,7 +58,7 @@ class ProductController extends Controller
      */
     public function show($id)
     {
-        $product = Product::with('category')->find($id);
+        $product = $this->productService->findProduct($id, true);
 
         if (!$product) {
             return response()->json([
@@ -83,16 +82,14 @@ class ProductController extends Controller
      */
     public function update(ProductRequest $request, $id)
     {
-        $product = Product::find($id);
-
-        if (!$product) {
+        try {
+            $this->productService->updateProduct($id, $request->except('_method'));
+        } catch (Exception $e) {
             return response()->json([
                 'error' => true,
-                'error_message' => 'Product not found'
-            ], 404);
+                'error_message' => $e->getMessage()
+            ]);
         }
-
-        $product->update($request->all());
 
         return response()->json([
             'error' => false,
@@ -108,16 +105,14 @@ class ProductController extends Controller
      */
     public function destroy($id)
     {
-        $product = Product::find($id);
-
-        if (!$product) {
+        try {
+            $this->productService->deleteProduct($id);
+        } catch (Exception $e) {
             return response()->json([
                 'error' => true,
-                'error_message' => 'Product not found'
-            ], 404);
+                'error_message' => $e->getMessage()
+            ]);
         }
-
-        $product->delete();
 
         return response()->json([
             'error' => false,
